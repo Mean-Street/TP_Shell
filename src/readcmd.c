@@ -73,16 +73,16 @@ static void read_single_quote(char ** cur, char ** cur_buf) {
 	while(1) {
 		char c = **cur;
 		switch(c) {
-                case '\'':
-                        SKIP_CHAR;
-                        return;
-                case '\0':
-                        fprintf(stderr, "Missing closing '\n");
-                        return;
-                default:
-                        READ_CHAR;
-                        break;
-                }
+			case '\'':
+				SKIP_CHAR;
+				return;
+			case '\0':
+				fprintf(stderr, "Missing closing '\n");
+				return;
+			default:
+				READ_CHAR;
+				break;
+		}
 	}
 }
 
@@ -91,19 +91,19 @@ static void read_double_quote(char ** cur, char ** cur_buf) {
 	while(1) {
 		char c = **cur;
 		switch(c) {
-		case '"':
-			SKIP_CHAR;
-			return;
-		case '\\':
-			SKIP_CHAR;
-			READ_CHAR;
-			break;
-                case '\0':
-                        fprintf(stderr, "Missing closing \"\n");
-                        return;
-		default:
-			READ_CHAR;
-			break;
+			case '"':
+				SKIP_CHAR;
+				return;
+			case '\\':
+				SKIP_CHAR;
+				READ_CHAR;
+				break;
+			case '\0':
+				fprintf(stderr, "Missing closing \"\n");
+				return;
+			default:
+				READ_CHAR;
+				break;
 		}
 	}
 }
@@ -112,27 +112,27 @@ static void read_word(char ** cur, char ** cur_buf) {
 	while(1) {
 		char c = **cur;
 		switch (c) {
-		case '\0':
-		case ' ':
-		case '\t':
-		case '<':
-		case '>':
-		case '|':
-			**cur_buf = '\0';
-			return;
-		case '\'':
-			read_single_quote(cur, cur_buf);
-			break;
-		case '"':
-			read_double_quote(cur, cur_buf);
-			break;
-		case '\\':
-			SKIP_CHAR;
-			READ_CHAR;
-			break;
-		default:
-			READ_CHAR;
-			break;
+			case '\0':
+			case ' ':
+			case '\t':
+			case '<':
+			case '>':
+			case '|':
+				**cur_buf = '\0';
+				return;
+			case '\'':
+				read_single_quote(cur, cur_buf);
+				break;
+			case '"':
+				read_double_quote(cur, cur_buf);
+				break;
+			case '\\':
+				SKIP_CHAR;
+				READ_CHAR;
+				break;
+			default:
+				READ_CHAR;
+				break;
 		}
 	}
 }
@@ -150,32 +150,32 @@ static char **split_in_words(char *line)
 	while ((c = *cur) != 0) {
 		char *w = 0;
 		switch (c) {
-		case ' ':
-		case '\t':
-			/* Ignore any whitespace */
-			cur++;
-			break;
-		case '&':
-		        w = "&";
-			cur++;
-			break;
-		case '<':
-			w = "<";
-			cur++;
-			break;
-		case '>':
-			w = ">";
-			cur++;
-			break;
-		case '|':
-			w = "|";
-			cur++;
-			break;
-		default:
-			/* Another word */
-			cur_buf = buf;
-			read_word(&cur, &cur_buf);
-			w = strdup(buf);
+			case ' ':
+			case '\t':
+				/* Ignore any whitespace */
+				cur++;
+				break;
+			case '&':
+				w = "&";
+				cur++;
+				break;
+			case '<':
+				w = "<";
+				cur++;
+				break;
+			case '>':
+				w = ">";
+				cur++;
+				break;
+			case '|':
+				w = "|";
+				cur++;
+				break;
+			default:
+				/* Another word */
+				cur_buf = buf;
+				read_word(&cur, &cur_buf);
+				w = strdup(buf);
 		}
 		if (w) {
 			tab = xrealloc(tab, (l + 1) * sizeof(char *));
@@ -256,61 +256,61 @@ struct cmdline *parsecmd(char **pline)
 	i = 0;
 	while ((w = words[i++]) != 0) {
 		switch (w[0]) {
-		case '<':
-			/* Tricky : the word can only be "<" */
-			if (s->in) {
-				s->err = "only one input file supported";
-				goto error;
-			}
-			if (words[i] == 0) {
-				s->err = "filename missing for input redirection";
-				goto error;
-			}
-			s->in = words[i++];
-			break;
-		case '>':
-			/* Tricky : the word can only be ">" */
-			if (s->out) {
-				s->err = "only one output file supported";
-				goto error;
-			}
-			if (words[i] == 0) {
-				s->err = "filename missing for output redirection";
-				goto error;
-			}
-			s->out = words[i++];
-			break;
-		case '&':
-			/* Tricky : the word can only be "&" */
-			if (cmd_len == 0) {
-				s->err = "misplaced ampersand";
-				goto error;
-			}
-			if (s->bg == 1) {
-				s->err = "only one ampersand supported";
-				goto error;
-			}
-			s->bg = 1;
-			break;
-		case '|':
-			/* Tricky : the word can only be "|" */
-			if (cmd_len == 0) {
-				s->err = "misplaced pipe";
-				goto error;
-			}
+			case '<':
+				/* Tricky : the word can only be "<" */
+				if (s->in) {
+					s->err = "only one input file supported";
+					goto error;
+				}
+				if (words[i] == 0) {
+					s->err = "filename missing for input redirection";
+					goto error;
+				}
+				s->in = words[i++];
+				break;
+			case '>':
+				/* Tricky : the word can only be ">" */
+				if (s->out) {
+					s->err = "only one output file supported";
+					goto error;
+				}
+				if (words[i] == 0) {
+					s->err = "filename missing for output redirection";
+					goto error;
+				}
+				s->out = words[i++];
+				break;
+			case '&':
+				/* Tricky : the word can only be "&" */
+				if (cmd_len == 0) {
+					s->err = "misplaced ampersand";
+					goto error;
+				}
+				if (s->bg == 1) {
+					s->err = "only one ampersand supported";
+					goto error;
+				}
+				s->bg = 1;
+				break;
+			case '|':
+				/* Tricky : the word can only be "|" */
+				if (cmd_len == 0) {
+					s->err = "misplaced pipe";
+					goto error;
+				}
 
-			seq = xrealloc(seq, (seq_len + 2) * sizeof(char **));
-			seq[seq_len++] = cmd;
-			seq[seq_len] = 0;
+				seq = xrealloc(seq, (seq_len + 2) * sizeof(char **));
+				seq[seq_len++] = cmd;
+				seq[seq_len] = 0;
 
-			cmd = xmalloc(sizeof(char *));
-			cmd[0] = 0;
-			cmd_len = 0;
-			break;
-		default:
-			cmd = xrealloc(cmd, (cmd_len + 2) * sizeof(char *));
-			cmd[cmd_len++] = w;
-			cmd[cmd_len] = 0;
+				cmd = xmalloc(sizeof(char *));
+				cmd[0] = 0;
+				cmd_len = 0;
+				break;
+			default:
+				cmd = xrealloc(cmd, (cmd_len + 2) * sizeof(char *));
+				cmd[cmd_len++] = w;
+				cmd[cmd_len] = 0;
 		}
 	}
 
@@ -330,12 +330,12 @@ struct cmdline *parsecmd(char **pline)
 error:
 	while ((w = words[i++]) != 0) {
 		switch (w[0]) {
-		case '<':
-		case '>':
-		case '|':
-			break;
-		default:
-			free(w);
+			case '<':
+			case '>':
+			case '|':
+				break;
+			default:
+				free(w);
 		}
 	}
 	free(words);

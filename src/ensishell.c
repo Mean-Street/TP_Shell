@@ -36,13 +36,13 @@ int question6_executer(char *line)
 
 	/* Remove this line when using parsecmd as it will free it */
 	free(line);
-	
+
 	return 0;
 }
 
 SCM executer_wrapper(SCM x)
 {
-        return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
+	return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
 }
 #endif
 
@@ -53,19 +53,19 @@ void terminate(char *line) {
 	clear_history();
 #endif
 	if (line)
-	  free(line);
+		free(line);
 	printf("exit\n");
 	exit(0);
 }
 
 
 int main() {
-        printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
+	printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
 #if USE_GUILE == 1
-        scm_init_guile();
-        /* register "executer" function in scheme */
-        scm_c_define_gsubr("executer", 1, 0, 0, executer_wrapper);
+	scm_init_guile();
+	/* register "executer" function in scheme */
+	scm_c_define_gsubr("executer", 1, 0, 0, executer_wrapper);
 #endif
 
 	while (1) {
@@ -94,8 +94,8 @@ int main() {
 			sprintf(catchligne, "(catch #t (lambda () %s) (lambda (key . parameters) (display \"mauvaise expression/bug en scheme\n\")))", line);
 			scm_eval_string(scm_from_locale_string(catchligne));
 			free(line);
-                        continue;
-                }
+			continue;
+		}
 #endif
 
 		/* parsecmd free line and set it up to 0 */
@@ -103,12 +103,12 @@ int main() {
 
 		/* If input stream closed, normal termination */
 		if (!l) {
-		  
+
 			terminate(0);
 		}
-		
 
-		
+
+
 		if (l->err) {
 			/* Syntax error, read another command */
 			printf("error: %s\n", l->err);
@@ -123,9 +123,9 @@ int main() {
 		for (i=0; l->seq[i]!=0; i++) {
 			char **cmd = l->seq[i];
 			printf("seq[%d]: ", i);
-                        for (j=0; cmd[j]!=0; j++) {
-                                printf("'%s' ", cmd[j]);
-                        }
+			for (j=0; cmd[j]!=0; j++) {
+				printf("'%s' ", cmd[j]);
+			}
 			printf("\n");
 		}
 	}
