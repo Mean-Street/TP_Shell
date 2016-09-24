@@ -19,16 +19,16 @@ int main(int argc,char** argv){
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART;
 	sa.sa_handler = childhandler;
-	sigaction(SIGCHLD,&sa,NULL);
+	//sigaction(SIGCHLD,&sa,NULL);
 	pid_t pid = 1;
 
 	for(uint8_t i=0;i<10;i++){
 		pid = fork();
 		if(pid == 0){
-			return 0;
+			execl("/bin/ls","ls",NULL);
 		}
 		else {
-			//waitpid(pid,NULL,WNOHANG);
+			waitpid(pid,NULL,WNOHANG);
 			;
 		}
 	}
