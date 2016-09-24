@@ -129,7 +129,8 @@ int main() {
 			}
 			printf("\n");
 		}
-
+		/********* STARTING CODE HERE *********/
+	}
 
 		/* Question 1 */
 		if (l->seq[0] != NULL) {
@@ -165,6 +166,4 @@ int main() {
 
 		}
 	}
-
-
 }
