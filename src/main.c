@@ -33,7 +33,9 @@ int main(int argc,char** argv){
 			//;
 		}
 	}
-	for(;;)
+	for(;;){
 		system("ps");
+		printf("------------------------------------------------------\n");
+	}
 	return EXIT_SUCCESS;
 }
