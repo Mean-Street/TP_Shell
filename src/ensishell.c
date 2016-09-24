@@ -139,7 +139,7 @@ int main() {
 				exit(0);
 			}
 			if (child_pid != 0) { // if we are in the father process
-				int child_status;
+				int child_status; // useful or not ?
 				if (l->bg)
 					waitpid(child_pid, &child_status, WNOHANG);
 				else 
