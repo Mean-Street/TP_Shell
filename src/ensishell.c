@@ -128,7 +128,41 @@ int main() {
 			}
 			printf("\n");
 		}
-
 		/********* STARTING CODE HERE *********/
+	}
+
+		/* Question 1 */
+		if (l->seq[0] != NULL) {
+			printf("Father process fork\n");
+			int child_pid = fork();
+			if (child_pid != 0) { // if we are in the father process
+				continue;
+				// TODO : wait for the son to end
+			} else {
+				printf("Modification of the child process\n");
+
+				// DEBUG
+				printf("Function : %s\n", l->seq[0][0]);
+				int i = 1;
+				char *k = l->seq[0][i];
+				while (k != NULL) {
+					printf("Arg : %s\n", k);
+					i++;
+					k = l->seq[0][i];
+				}
+				// END DEBUG
+				
+				// not sure about this :
+				execvp(l->seq[0][0], &(l->seq[0][1]));
+				printf("This should never be displayed\n");
+			}
+			// MEMO for 'exec' family :
+			// if p in the name = search in the current path
+			// (if not, need to write complete path of the function)
+			// if v in the name = args list in parameter
+			// if e in the name = environment variables in parameter
+			// ====> here, execvp
+
+		}
 	}
 }
