@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 
 #include "variante.h"
 #include "readcmd.h"
@@ -138,8 +139,8 @@ int main() {
 				fprintf(stderr,"Error when trying to fork.");
 				exit(0);
 			if (child_pid != 0) { // if we are in the father process
-				continue;
-				// TODO : wait for the son to end
+				int child_status;
+				wait(&child_status);
 			} else {
 				printf("Modification of the child process\n");
 
@@ -153,7 +154,7 @@ int main() {
 					k = l->seq[0][i];
 				}
 				// END DEBUG
-				
+
 				// not sure about this :
 				execvp(l->seq[0][0], &(l->seq[0][1]));
 				printf("This should never be displayed\n");
@@ -168,3 +169,4 @@ int main() {
 		}
 	}
 }
+
