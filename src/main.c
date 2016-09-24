@@ -25,17 +25,16 @@ int main(int argc,char** argv){
 	for(uint8_t i=0;i<10;i++){
 		pid = fork();
 		if(pid == 0){
-			sleep(10-i);
-			return 0;
+			execl("/bin/ls","ls",NULL);
 		}
 		else {
-			/* waitpid(pid,NULL,WNOHANG); */
+			waitpid(pid,NULL,WNOHANG);
 			;
 		}
 	}
-	for(;;){
+	for(uint8_t i=0;i<100;i++){
 		system("ps");
-		printf("-------------------------------------------\n");
+		printf("-------------------------------------\n");
 	}
 	return EXIT_SUCCESS;
 }
