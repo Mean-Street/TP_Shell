@@ -130,7 +130,7 @@ int main() {
 			printf("\n");
 		}
 		/********* STARTING CODE HERE *********/
-	}
+
 
 		/* Question 1 */
 		if (l->seq[0] != NULL) {
@@ -152,7 +152,7 @@ int main() {
 					k = l->seq[0][i];
 				}
 				// END DEBUG
-				
+
 				// not sure about this :
 				execvp(l->seq[0][0], &(l->seq[0][1]));
 				printf("This should never be displayed\n");
@@ -167,3 +167,4 @@ int main() {
 		}
 	}
 }
+
