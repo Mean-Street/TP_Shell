@@ -128,6 +128,7 @@ int main() {
 			}
 			printf("\n");
 		}
-	}
 
+		/********* STARTING CODE HERE *********/
+	}
 }
