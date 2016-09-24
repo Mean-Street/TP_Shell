@@ -129,12 +129,14 @@ int main() {
 			printf("\n");
 		}
 		/********* STARTING CODE HERE *********/
-	}
 
 		/* Question 1 */
 		if (l->seq[0] != NULL) {
 			printf("Father process fork\n");
 			int child_pid = fork();
+			if (child_pid < 0){
+				fprintf(stderr,"Error when trying to fork.");
+				exit(0);
 			if (child_pid != 0) { // if we are in the father process
 				continue;
 				// TODO : wait for the son to end
@@ -162,7 +164,7 @@ int main() {
 			// if v in the name = args list in parameter
 			// if e in the name = environment variables in parameter
 			// ====> here, execvp
-
+			}
 		}
 	}
 }
