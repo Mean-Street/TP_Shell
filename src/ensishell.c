@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 
 #include "variante.h"
 #include "readcmd.h"
@@ -135,8 +136,8 @@ int main() {
 			printf("Father process fork\n");
 			int child_pid = fork();
 			if (child_pid != 0) { // if we are in the father process
-				continue;
-				// TODO : wait for the son to end
+				int child_status;
+				wait(&child_status);
 			} else {
 				printf("Modification of the child process\n");
 
