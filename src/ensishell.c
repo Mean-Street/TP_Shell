@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
-
 #include "variante.h"
 #include "readcmd.h"
 
@@ -26,23 +25,19 @@
 #if USE_GUILE == 1
 #include <libguile.h>
 
-int question6_executer(char *line)
-{
+int question6_executer(char *line){
 	/* Question 6: Insert your code to execute the command line
 	 * identically to the standard execution scheme:
 	 * parsecmd, then fork+execvp, for a single command.
 	 * pipe and i/o redirection are not required.
 	 */
 	printf("Not implemented yet: can not execute %s\n", line);
-
 	/* Remove this line when using parsecmd as it will free it */
 	free(line);
-
 	return 0;
 }
 
-SCM executer_wrapper(SCM x)
-{
+SCM executer_wrapper(SCM x){
 	return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
 }
 #endif
@@ -59,6 +54,9 @@ void terminate(char *line) {
 	exit(0);
 }
 
+void childhandler(int s){
+	while (waitpid(-1,NULL,WNOHANG)>0);
+}
 
 int main() {
 	printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
@@ -68,6 +66,12 @@ int main() {
 	/* register "executer" function in scheme */
 	scm_c_define_gsubr("executer", 1, 0, 0, executer_wrapper);
 #endif
+
+	/* Defining the signal handler */
+	struct sigaction sa;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = childhandler;
+	sigaction(SIGCHLD,&sa,NULL);
 
 	while (1) {
 		struct cmdline *l;
@@ -79,9 +83,8 @@ int main() {
 		   can not be cleaned at the end of the program. Thus
 		   one memory leak per command seems unavoidable yet */
 		line = readline(prompt);
-		if (line == 0 || ! strncmp(line,"exit", 4)) {
+		if (line == 0 || ! strncmp(line,"exit", 4))
 			terminate(line);
-		}
 
 #if USE_GNU_READLINE == 1
 		add_history(line);
@@ -103,19 +106,13 @@ int main() {
 		l = parsecmd( & line);
 
 		/* If input stream closed, normal termination */
-		if (!l) {
-
+		if (!l)
 			terminate(0);
-		}
-
-
-
 		if (l->err) {
 			/* Syntax error, read another command */
 			printf("error: %s\n", l->err);
 			continue;
 		}
-
 		if (l->in) printf("in: %s\n", l->in);
 		if (l->out) printf("out: %s\n", l->out);
 		if (l->bg) printf("background (&)\n");
@@ -131,7 +128,6 @@ int main() {
 		}
 		/********* STARTING CODE HERE *********/
 
-		/* Question 1 */
 		if (l->seq[0] != NULL) {
 			int child_pid = fork();
 			if (child_pid < 0) {
@@ -145,7 +141,6 @@ int main() {
 				else 
 					waitpid(child_pid, &child_status, 0);
 			} else { // if we are in the child process
-
 				// DEBUG
 				/* printf("Function : %s\n", l->seq[0][0]); */
 				/* int i = 1; */

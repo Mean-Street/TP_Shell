@@ -17,9 +17,9 @@ void childhandler(int s){
 int main(int argc,char** argv){
 	struct sigaction sa;
 	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART;
+	//sa.sa_flags = SA_RESTART;
 	sa.sa_handler = childhandler;
-	/* sigaction(SIGCHLD,&sa,NULL); */
+	sigaction(SIGCHLD,&sa,NULL); 
 	pid_t pid = 1;
 
 	for(uint8_t i=0;i<10;i++){
