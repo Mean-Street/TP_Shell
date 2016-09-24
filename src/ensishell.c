@@ -138,6 +138,7 @@ int main() {
 			if (child_pid < 0){
 				fprintf(stderr,"Error when trying to fork.");
 				exit(0);
+			}
 			if (child_pid != 0) { // if we are in the father process
 				int child_status;
 				wait(&child_status);
@@ -165,7 +166,6 @@ int main() {
 			// if v in the name = args list in parameter
 			// if e in the name = environment variables in parameter
 			// ====> here, execvp
-			}
 		}
 	}
 }
