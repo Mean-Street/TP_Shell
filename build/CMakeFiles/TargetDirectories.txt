@@ -1,0 +1,7 @@
+/home/piggygenius/Studies/Ensimag/2A/SEPC/1-Project/tp_shell/build/CMakeFiles/edit_cache.dir
+/home/piggygenius/Studies/Ensimag/2A/SEPC/1-Project/tp_shell/build/CMakeFiles/ensishell.dir
+/home/piggygenius/Studies/Ensimag/2A/SEPC/1-Project/tp_shell/build/CMakeFiles/rebuild_cache.dir
+/home/piggygenius/Studies/Ensimag/2A/SEPC/1-Project/tp_shell/build/CMakeFiles/test.dir
+/home/piggygenius/Studies/Ensimag/2A/SEPC/1-Project/tp_shell/build/CMakeFiles/package.dir
+/home/piggygenius/Studies/Ensimag/2A/SEPC/1-Project/tp_shell/build/CMakeFiles/check.dir
+/home/piggygenius/Studies/Ensimag/2A/SEPC/1-Project/tp_shell/build/CMakeFiles/package_source.dir
