@@ -140,7 +140,10 @@ int main() {
 			}
 			if (child_pid != 0) { // if we are in the father process
 				int child_status;
-				waitpid(child_pid, &child_status, 0);
+				if (l->bg)
+					waitpid(child_pid, &child_status, WNOHANG);
+				else 
+					waitpid(child_pid, &child_status, 0);
 			} else { // if we are in the child process
 
 				// DEBUG
@@ -155,7 +158,7 @@ int main() {
 				// END DEBUG
 
 				// not sure about this :
-				execvp(l->seq[0][0], l->seq[0]);
+				execvp(**(l->seq), *(l->seq));
 			}
 			// MEMO for 'exec' family :
 			// if p in the name = search in the current path
