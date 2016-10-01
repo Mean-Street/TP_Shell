@@ -134,6 +134,7 @@ int main() {
 			}
 			printf("\n");
 		}
+
 		/********* STARTING CODE HERE *********/
 
 		if (l->seq[0] != NULL) {
@@ -148,10 +149,25 @@ int main() {
 					waitpid(child_pid, &child_status, 0);
 				else
 					add(jobs_list, child_pid, l->seq[0]);
-
-
 			} else { // if we are in the child process
-				execvp(**(l->seq), *(l->seq));
+				if (l->seq[1] == NULL) { // if it's not a pipe
+					execvp(**(l->seq), *(l->seq));
+				} else { // if it's a pipe
+					int pipe_tab[2];
+					pipe(pipe_tab);
+					int res = fork();
+					if (res == 0) { // the son becomes the 'after pipe'
+						dup2(pipe_tab[0], 0);
+						close(pipe_tab[0]);
+						close(pipe_tab[1]);
+						execvp(*(l->seq[1]), l->seq[1]);
+					} else { // the grand son becomes the 'before pipe'
+						dup2(pipe_tab[1], 1);
+						close(pipe_tab[0]);
+						close(pipe_tab[1]);
+						execvp(*(l->seq[0]), l->seq[0]);
+					}
+				}
 			}
 			// MEMO for 'exec' family :
 			// if p in the name = search in the current path
