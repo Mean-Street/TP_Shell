@@ -8,9 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include "variante.h"
 #include "readcmd.h"
+#include "list.h"
 
 #ifndef VARIANTE
 #error "Variante non défini !!"
@@ -50,8 +54,8 @@ void terminate(char *line) {
 #endif
 	if (line)
 		free(line);
-	printf("exit\n");
-	exit(0);
+	/* We have to kill all our children before ending */
+	kill(-getpgrp(),SIGTERM);
 }
 
 void childhandler(int s){
@@ -70,8 +74,12 @@ int main() {
 	/* Defining the signal handler */
 	struct sigaction sa;
 	sigemptyset(&sa.sa_mask);
+	//sa.sa_flags = SA_RESTART;
 	sa.sa_handler = childhandler;
 	sigaction(SIGCHLD,&sa,NULL);
+
+	/* Creating jobs list */
+	proclist* jobs_list = create_list();
 
 	while (1) {
 		struct cmdline *l;
@@ -131,28 +139,18 @@ int main() {
 		if (l->seq[0] != NULL) {
 			int child_pid = fork();
 			if (child_pid < 0) {
-				fprintf(stderr,"Error when trying to fork.");
+				fprintf(stderr,"Error when trying to fork.\n");
 				exit(0);
 			}
 			if (child_pid != 0) { // if we are in the father process
 				int child_status; // useful or not ?
-				if (l->bg)
-					while (waitpid(-1, &child_status, WNOHANG)>0);
-				else 
+				if (!l->bg)
 					waitpid(child_pid, &child_status, 0);
-			} else { // if we are in the child process
-				// DEBUG
-				/* printf("Function : %s\n", l->seq[0][0]); */
-				/* int i = 1; */
-				/* char *k = l->seq[0][i]; */
-				/* while (k != NULL) { */
-				/* 	printf("Arg : %s\n", k); */
-				/* 	i++; */
-				/* 	k = l->seq[0][i]; */
-				/* } */
-				// END DEBUG
+				else
+					add(jobs_list, child_pid, l->seq[0]);
 
-				// not sure about this :
+
+			} else { // if we are in the child process
 				execvp(**(l->seq), *(l->seq));
 			}
 			// MEMO for 'exec' family :
