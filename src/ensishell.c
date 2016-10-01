@@ -11,7 +11,9 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include "variante.h"
 #include "readcmd.h"
 #include "list.h"
@@ -143,16 +145,32 @@ int main() {
 				fprintf(stderr,"Error when trying to fork.\n");
 				exit(0);
 			}
-			if (child_pid != 0) { // if we are in the father process
+			// FATHER PROCESS
+			if (child_pid != 0) {
 				int child_status; // useful or not ?
 				if (!l->bg)
 					waitpid(child_pid, &child_status, 0);
 				else
 					add(jobs_list, child_pid, l->seq[0]);
-			} else { // if we are in the child process
-				if (l->seq[1] == NULL) { // if it's not a pipe
+			// CHILD PROCESS
+			} else {
+				
+				// REDIRECTIONS
+				if (l->in) { // input redirection
+					int in_fd = open(l->in, O_RDONLY); 
+					dup2(in_fd, 0);
+					close(in_fd);
+				}
+				if (l->out) { // output redirection
+					int out_fd = open(l->out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+					dup2(out_fd, 1);
+					close(out_fd);
+				}
+
+				// PIPES
+				if (l->seq[1] == NULL) { // if not pipe
 					execvp(**(l->seq), *(l->seq));
-				} else { // if it's a pipe
+				} else { // if pipe
 					int pipe_tab[2];
 					pipe(pipe_tab);
 					int res = fork();
