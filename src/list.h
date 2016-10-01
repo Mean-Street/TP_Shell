@@ -20,4 +20,6 @@ typedef struct {
 proclist* create_list(void);
 void add(proclist* list, pid_t pid, char** command);
 void del(proclist* list, pid_t pid);
+void disp(proclist* list);
+void kill_children(proclist* list);
 #endif

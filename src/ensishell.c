@@ -48,8 +48,7 @@ SCM executer_wrapper(SCM x){
 }
 #endif
 
-
-void terminate(char *line) {
+void terminate(char *line,proclist* list) {
 #if USE_GNU_READLINE == 1
 	/* rl_clear_history() does not exist yet in centOS 6 */
 	clear_history();
@@ -57,7 +56,9 @@ void terminate(char *line) {
 	if (line)
 		free(line);
 	/* We have to kill all our children before ending */
-	kill(-getpgrp(),SIGTERM);
+	disp(list);
+	kill_children(list);
+	exit(0);
 }
 
 void childhandler(int s){
@@ -94,7 +95,7 @@ int main() {
 		   one memory leak per command seems unavoidable yet */
 		line = readline(prompt);
 		if (line == 0 || ! strncmp(line,"exit", 4))
-			terminate(line);
+			terminate(line,jobs_list);
 
 #if USE_GNU_READLINE == 1
 		add_history(line);
@@ -117,7 +118,7 @@ int main() {
 
 		/* If input stream closed, normal termination */
 		if (!l)
-			terminate(0);
+			terminate(0,jobs_list);
 		if (l->err) {
 			/* Syntax error, read another command */
 			printf("error: %s\n", l->err);

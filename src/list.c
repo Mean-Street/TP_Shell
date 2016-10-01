@@ -13,18 +13,18 @@ proclist* create_list(void) {
 
 void add(proclist* list, pid_t pid, char** command) {
 	/* We store the command in one string */
+	proc* child = malloc(sizeof(proc));
 	uint32_t length = 0;
 	for (uint32_t i=0; command[i] != NULL; i++)
-		length += strlen(command[i]);
-	char call[length];
-	for (uint32_t i=0; command[i] != NULL; i++)
-		strcat(call, command[i]);
+		length += strlen(command[i])+1;
+	child->command = calloc(length+1, 1);
+	for (uint32_t i=0; command[i] != NULL; i++) {
+		strcat(child->command, command[i]);
+		strcat(child->command, " ");
+	}
 
-	proc* child = malloc(sizeof(proc));
 	child->pid = pid;
 	child->next = NULL;
-	child->command = malloc(sizeof(length));
-	child->command = strcpy(child->command, call);
 	child->running = true;
 
 	if (list->head == NULL) {
@@ -69,4 +69,28 @@ void del(proclist* list, pid_t pid) {
 		}
 	}
 	list->size -= 1;
+}
+
+void disp(proclist* list) {
+	proc* child = list->head;
+	char* state = NULL;
+	for (uint32_t i; child != NULL;i++) {
+		if (child->running)
+			state = "Running";
+		else
+			state = "Done";
+		printf("[%u]\t %s \t\t %u: %s\n",i,state,child->pid,child->command);
+		child = child->next;
+		i += 1;
+	}
+}
+
+void kill_children(proclist* list) {
+	proc* child;
+	while (list->head != NULL) {
+		child = list->head;
+		list->head = child->next;
+		free(child->command);
+		free(child);
+	}
 }
