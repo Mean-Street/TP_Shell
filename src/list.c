@@ -74,14 +74,13 @@ void del(proclist* list, pid_t pid) {
 void disp(proclist* list) {
 	proc* child = list->head;
 	char* state = NULL;
-	for (uint32_t i; child != NULL;i++) {
+	for (uint32_t i=0; child != NULL;i++) {
 		if (child->running)
 			state = "Running";
 		else
 			state = "Done";
 		printf("[%u]\t %s \t\t %u: %s\n",i,state,child->pid,child->command);
 		child = child->next;
-		i += 1;
 	}
 }
 

@@ -55,12 +55,45 @@ void terminate(char *line,proclist* list) {
 #endif
 	if (line)
 		free(line);
-	/* We have to kill all our children before ending */
+	/* We have to kill all our children before leaving */
 	disp(list);
 	kill_children(list);
 	exit(0);
 }
 
+void pipe_process(const char* file, char* const argv[]) {
+	int pipe_tab[2];
+	pipe(pipe_tab);
+	int res = fork();
+	// The son becomes the 'after pipe'
+	if (res == 0) {
+		dup2(pipe_tab[0], 0);
+		close(pipe_tab[0]);
+		close(pipe_tab[1]);
+		execvp(file, argv);
+	// The grand son becomes the 'before pipe'
+	} else {
+		dup2(pipe_tab[1], 1);
+		close(pipe_tab[0]);
+		close(pipe_tab[1]);
+		execvp(file, argv);
+	}
+}
+
+void redirect_process(struct cmdline* l){
+	if (l->in) { // input redirection
+		int in_fd = open(l->in, O_RDONLY); 
+		dup2(in_fd, 0);
+		close(in_fd);
+	}
+	if (l->out) { // output redirection
+		int out_fd = open(l->out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+		dup2(out_fd, 1);
+		close(out_fd);
+	}
+}
+
+/* Our handler will deal with multiple processes running in background */
 void childhandler(int s){
 	while (waitpid(-1,NULL,WNOHANG)>0);
 }
@@ -89,6 +122,7 @@ int main() {
 		char *line=0;
 		int i, j;
 		char *prompt = "ensishell>";
+		int child_pid;
 
 		/* Readline use some internal memory structure that
 		   can not be cleaned at the end of the program. Thus
@@ -141,60 +175,31 @@ int main() {
 		/********* STARTING CODE HERE *********/
 
 		if (l->seq[0] != NULL) {
-			int child_pid = fork();
+			child_pid = fork();
+
 			if (child_pid < 0) {
 				fprintf(stderr,"Error when trying to fork.\n");
 				exit(0);
 			}
+
 			// FATHER PROCESS
 			if (child_pid != 0) {
-				int child_status; // useful or not ?
 				if (!l->bg)
-					waitpid(child_pid, &child_status, 0);
+					waitpid(child_pid,NULL, 0);
 				else
 					add(jobs_list, child_pid, l->seq[0]);
-			// CHILD PROCESS
-			} else {
-				
-				// REDIRECTIONS
-				if (l->in) { // input redirection
-					int in_fd = open(l->in, O_RDONLY); 
-					dup2(in_fd, 0);
-					close(in_fd);
-				}
-				if (l->out) { // output redirection
-					int out_fd = open(l->out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
-					dup2(out_fd, 1);
-					close(out_fd);
-				}
+			} 
 
-				// PIPES
-				if (l->seq[1] == NULL) { // if not pipe
-					execvp(**(l->seq), *(l->seq));
-				} else { // if pipe
-					int pipe_tab[2];
-					pipe(pipe_tab);
-					int res = fork();
-					if (res == 0) { // the son becomes the 'after pipe'
-						dup2(pipe_tab[0], 0);
-						close(pipe_tab[0]);
-						close(pipe_tab[1]);
-						execvp(*(l->seq[1]), l->seq[1]);
-					} else { // the grand son becomes the 'before pipe'
-						dup2(pipe_tab[1], 1);
-						close(pipe_tab[0]);
-						close(pipe_tab[1]);
-						execvp(*(l->seq[0]), l->seq[0]);
-					}
-				}
+			// CHILD PROCESS
+			else {
+				// Redirect if needed
+				redirect_process(l);
+				// Pipe if needed
+				if (l->seq[1] == NULL)
+					execvp(**(l->seq), l->seq[0]);
+				else
+					pipe_process(*(l->seq[0]),l->seq[0]);
 			}
-			// MEMO for 'exec' family :
-			// if p in the name = search in the current path
-			// (if not, need to write complete path of the function)
-			// if v in the name = args list in parameter
-			// if e in the name = environment variables in parameter
-			// ====> here, execvp
 		}
 	}
 }
-
