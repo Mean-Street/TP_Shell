@@ -93,6 +93,35 @@ void redirect_process(struct cmdline* l){
 	}
 }
 
+void create_process(proclist* jobs_list, struct cmdline* l) {
+	uint32_t child_pid = fork();
+
+	if (child_pid < 0) {
+		fprintf(stderr,"Error when trying to fork.\n");
+		exit(0);
+	}
+
+	// FATHER PROCESS
+	if (child_pid != 0) {
+		if (!l->bg)
+			waitpid(child_pid,NULL, 0);
+		else
+			add(jobs_list, child_pid, l->seq[0]);
+	} 
+
+	// CHILD PROCESS
+	else {
+		// Redirect if needed
+		redirect_process(l);
+		// Pipe if needed
+		if (l->seq[1] == NULL)
+			execvp(**(l->seq), l->seq[0]);
+		else
+			pipe_process(*(l->seq[0]),l->seq[0]);
+	}
+}
+
+
 /* Our handler will deal with multiple processes running in background */
 void childhandler(int s){
 	while (waitpid(-1,NULL,WNOHANG)>0);
@@ -122,7 +151,6 @@ int main() {
 		char *line=0;
 		int i, j;
 		char *prompt = "ensishell>";
-		int child_pid;
 
 		/* Readline use some internal memory structure that
 		   can not be cleaned at the end of the program. Thus
@@ -175,31 +203,7 @@ int main() {
 		/********* STARTING CODE HERE *********/
 
 		if (l->seq[0] != NULL) {
-			child_pid = fork();
-
-			if (child_pid < 0) {
-				fprintf(stderr,"Error when trying to fork.\n");
-				exit(0);
-			}
-
-			// FATHER PROCESS
-			if (child_pid != 0) {
-				if (!l->bg)
-					waitpid(child_pid,NULL, 0);
-				else
-					add(jobs_list, child_pid, l->seq[0]);
-			} 
-
-			// CHILD PROCESS
-			else {
-				// Redirect if needed
-				redirect_process(l);
-				// Pipe if needed
-				if (l->seq[1] == NULL)
-					execvp(**(l->seq), l->seq[0]);
-				else
-					pipe_process(*(l->seq[0]),l->seq[0]);
-			}
+			create_process(jobs_list, l);
 		}
 	}
 }
