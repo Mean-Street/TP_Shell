@@ -31,7 +31,8 @@
 #if USE_GUILE == 1
 #include <libguile.h>
 
-int question6_executer(char *line){
+int question6_executer(char *line)
+{
 	/* Question 6: Insert your code to execute the command line
 	 * identically to the standard execution scheme:
 	 * parsecmd, then fork+execvp, for a single command.
@@ -43,12 +44,14 @@ int question6_executer(char *line){
 	return 0;
 }
 
-SCM executer_wrapper(SCM x){
+SCM executer_wrapper(SCM x)
+{
 	return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
 }
 #endif
 
-void terminate(char *line,proclist* list) {
+void terminate(char *line,proclist* list)
+{
 #if USE_GNU_READLINE == 1
 	/* rl_clear_history() does not exist yet in centOS 6 */
 	clear_history();
@@ -61,7 +64,8 @@ void terminate(char *line,proclist* list) {
 	exit(0);
 }
 
-void pipe_process(const char* file, char* const argv[]) {
+void pipe_process(const char* file, char* const argv[])
+{
 	int pipe_tab[2];
 	pipe(pipe_tab);
 	int res = fork();
@@ -80,7 +84,8 @@ void pipe_process(const char* file, char* const argv[]) {
 	}
 }
 
-void redirect_process(struct cmdline* l){
+void redirect_process(struct cmdline* l)
+{
 	if (l->in) { // input redirection
 		int in_fd = open(l->in, O_RDONLY); 
 		dup2(in_fd, 0);
@@ -93,7 +98,8 @@ void redirect_process(struct cmdline* l){
 	}
 }
 
-void create_process(proclist* jobs_list, struct cmdline* l) {
+void create_process(proclist* jobs_list, struct cmdline* l)
+{
 	uint32_t child_pid = fork();
 
 	if (child_pid < 0) {
@@ -123,11 +129,13 @@ void create_process(proclist* jobs_list, struct cmdline* l) {
 
 
 /* Our handler will deal with multiple processes running in background */
-void childhandler(int s){
+void childhandler(int s)
+{
 	while (waitpid(-1,NULL,WNOHANG)>0);
 }
 
-int main() {
+int main()
+{
 	printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
 #if USE_GUILE == 1
