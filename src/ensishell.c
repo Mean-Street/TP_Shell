@@ -18,6 +18,8 @@
 #include "readcmd.h"
 #include "list.h"
 
+proclist* jobs_list;
+
 #ifndef VARIANTE
 #error "Variante non défini !!"
 #endif
@@ -27,28 +29,6 @@
  * following lines.  You may also have to comment related pkg-config
  * lines in CMakeLists.txt.
  */
-
-#if USE_GUILE == 1
-#include <libguile.h>
-
-int question6_executer(char *line)
-{
-	/* Question 6: Insert your code to execute the command line
-	 * identically to the standard execution scheme:
-	 * parsecmd, then fork+execvp, for a single command.
-	 * pipe and i/o redirection are not required.
-	 */
-	printf("Not implemented yet: can not execute %s\n", line);
-	/* Remove this line when using parsecmd as it will free it */
-	free(line);
-	return 0;
-}
-
-SCM executer_wrapper(SCM x)
-{
-	return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
-}
-#endif
 
 void terminate(char *line,proclist* list)
 {
@@ -134,8 +114,53 @@ void childhandler(int s)
 	while (waitpid(-1,NULL,WNOHANG)>0);
 }
 
+int setup_line(struct cmdline** l, char* line)
+{
+	*l = parsecmd(&line);
+	/* If input stream closed, normal termination */
+	if (!(*l))
+		terminate(0,jobs_list);
+	if ((*l)->err) {
+		/* Syntax error, read another command */
+		printf("error: %s\n", (*l)->err);
+		return 0;
+	}
+	if ((*l)->in) printf("in: %s\n", (*l)->in);
+	if ((*l)->out) printf("out: %s\n", (*l)->out);
+	if ((*l)->bg) printf("background (&)\n");
+	return 1;
+}
+
+#if USE_GUILE == 1
+#include <libguile.h>
+
+int question6_executer(char *line)
+{
+	struct cmdline* l;
+	int res = setup_line(&l, line);
+	if (res == 0)
+		return 0;
+	if (l->seq[0] != NULL) {
+		create_process(jobs_list, l);
+	}
+	return 1;
+}
+
+SCM executer_wrapper(SCM x)
+{
+	printf("%p\n",jobs_list);
+	return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
+}
+#endif
+
+
+
 int main()
 {
+
+	/* Creating jobs list */
+	jobs_list = create_list();
+
 	printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
 #if USE_GUILE == 1
@@ -147,17 +172,13 @@ int main()
 	/* Defining the signal handler */
 	struct sigaction sa;
 	sigemptyset(&sa.sa_mask);
-	//sa.sa_flags = SA_RESTART;
 	sa.sa_handler = childhandler;
 	sigaction(SIGCHLD,&sa,NULL);
-
-	/* Creating jobs list */
-	proclist* jobs_list = create_list();
 
 	while (1) {
 		struct cmdline *l;
 		char *line=0;
-		int i, j;
+		int res;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
@@ -186,32 +207,9 @@ int main()
 #endif
 
 		/* parsecmd free line and set it up to 0 */
-		l = parsecmd( & line);
-
-		/* If input stream closed, normal termination */
-		if (!l)
-			terminate(0,jobs_list);
-		if (l->err) {
-			/* Syntax error, read another command */
-			printf("error: %s\n", l->err);
+		res = setup_line(&l, line);
+		if (res == 0)
 			continue;
-		}
-		if (l->in) printf("in: %s\n", l->in);
-		if (l->out) printf("out: %s\n", l->out);
-		if (l->bg) printf("background (&)\n");
-
-		/* Display each command of the pipe */
-		for (i=0; l->seq[i]!=0; i++) {
-			char **cmd = l->seq[i];
-			printf("seq[%d]: ", i);
-			for (j=0; cmd[j]!=0; j++) {
-				printf("'%s' ", cmd[j]);
-			}
-			printf("\n");
-		}
-
-		/********* STARTING CODE HERE *********/
-
 		if (l->seq[0] != NULL) {
 			create_process(jobs_list, l);
 		}
