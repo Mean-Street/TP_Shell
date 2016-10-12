@@ -71,7 +71,7 @@ void del(proclist* list, pid_t pid) {
 	list->size -= 1;
 }
 
-void disp(proclist* list) {
+void disp_jobs(proclist* list) {
 	proc* child = list->head;
 	char* state = NULL;
 	for (uint32_t i=0; child != NULL;i++) {

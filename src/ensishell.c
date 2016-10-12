@@ -59,12 +59,12 @@ void terminate(char *line,proclist* list)
 	if (line)
 		free(line);
 	/* We have to kill all our children before leaving */
-	disp(list);
+	disp_jobs(list);
 	kill_children(list);
 	exit(0);
 }
 
-void pipe_process(const char* file, char* const argv[])
+void pipe_process(char*** seq)
 {
 	int pipe_tab[2];
 	pipe(pipe_tab);
@@ -74,13 +74,13 @@ void pipe_process(const char* file, char* const argv[])
 		dup2(pipe_tab[0], 0);
 		close(pipe_tab[0]);
 		close(pipe_tab[1]);
-		execvp(file, argv);
+		execvp(*(seq[1]), seq[1]);
 	// The grand son becomes the 'before pipe'
 	} else {
 		dup2(pipe_tab[1], 1);
 		close(pipe_tab[0]);
 		close(pipe_tab[1]);
-		execvp(file, argv);
+		execvp(*(seq[0]), seq[0]);
 	}
 }
 
@@ -121,9 +121,9 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 		redirect_process(l);
 		// Pipe if needed
 		if (l->seq[1] == NULL)
-			execvp(**(l->seq), l->seq[0]);
+			execvp(**(l->seq), *(l->seq));
 		else
-			pipe_process(*(l->seq[0]),l->seq[0]);
+			pipe_process(l->seq);
 	}
 }
 
@@ -164,8 +164,10 @@ int main()
 		   can not be cleaned at the end of the program. Thus
 		   one memory leak per command seems unavoidable yet */
 		line = readline(prompt);
-		if (line == 0 || ! strncmp(line,"exit", 4))
-			terminate(line,jobs_list);
+		if (line == NULL || ! strncmp(line, "exit", 4))
+			terminate(line, jobs_list);
+		else if (! strncmp(line, "jobs", 4))
+			disp_jobs(jobs_list);
 
 #if USE_GNU_READLINE == 1
 		add_history(line);
