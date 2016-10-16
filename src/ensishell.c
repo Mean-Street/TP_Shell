@@ -100,9 +100,9 @@ int main()
 #if USE_GNU_READLINE == 1
 		add_history(line);
 #endif
-		if (line == NULL || ! strncmp(line, "exit", 4))
+		if (line == NULL || ! strncmp(line, "exit", 4)) {
 			terminate(line, jobs_list);
-		else if (! strncmp(line, "jobs", 4)){
+		} else if (! strncmp(line, "jobs", 4)) {
 			disp_jobs(jobs_list);
 			continue;
 		}
