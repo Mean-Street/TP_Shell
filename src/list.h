@@ -22,4 +22,6 @@ void add(proclist* list, pid_t pid, char** command);
 void del(proclist* list, pid_t pid);
 void disp_jobs(proclist* list);
 void kill_children(proclist* list);
+void change_state(proclist* list, pid_t pid);
+void clean_list(proclist* list);
 #endif

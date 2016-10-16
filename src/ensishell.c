@@ -36,7 +36,7 @@ void childhandler(int s)
 {
 	pid_t pid = 0;
 	while ((pid = waitpid(-1,NULL,WNOHANG))>0)
-		del(jobs_list,pid);
+		change_state(jobs_list,pid);
 }
 
 
@@ -96,14 +96,17 @@ int main()
 		   can not be cleaned at the end of the program. Thus
 		   one memory leak per command seems unavoidable yet */
 		line = readline(prompt);
-		if (line == NULL || ! strncmp(line, "exit", 4))
-			terminate(line, jobs_list);
-		else if (! strncmp(line, "jobs", 4))
-			disp_jobs(jobs_list);
-
+		
 #if USE_GNU_READLINE == 1
 		add_history(line);
 #endif
+		if (line == NULL || ! strncmp(line, "exit", 4))
+			terminate(line, jobs_list);
+		else if (! strncmp(line, "jobs", 4)){
+			disp_jobs(jobs_list);
+			continue;
+		}
+
 #if USE_GUILE == 1
 		/* The line is a scheme command */
 		if (line[0] == '(') {
@@ -114,6 +117,7 @@ int main()
 		setup_line(&l,line,jobs_list);
 		if (l->seq[0] != NULL) {
 			create_process(jobs_list, l);
+			clean_list(jobs_list);
 		}
 	}
 }

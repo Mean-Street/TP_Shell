@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <signal.h>
 #include "list.h"
 
-proclist* create_list(void) {
+proclist* create_list(void) 
+{
 	proclist* list = malloc(sizeof(proclist));
 	list->head = NULL;
 	list->tail = NULL;
@@ -11,7 +14,8 @@ proclist* create_list(void) {
 	return list;
 }
 
-void add(proclist* list, pid_t pid, char** command) {
+void add(proclist* list, pid_t pid, char** command) 
+{
 	/* We store the command in one string */
 	proc* child = malloc(sizeof(proc));
 	uint32_t length = 0;
@@ -37,7 +41,8 @@ void add(proclist* list, pid_t pid, char** command) {
 	list->size += 1;
 }
 
-void del(proclist* list, pid_t pid) {
+void del(proclist* list, pid_t pid) 
+{
 	if (list->head == NULL) {
 		fprintf(stderr, "Error : empty list.\n");
 		return;
@@ -71,24 +76,53 @@ void del(proclist* list, pid_t pid) {
 	list->size -= 1;
 }
 
-void disp_jobs(proclist* list) {
+void disp_jobs(proclist* list) 
+{
 	proc* child = list->head;
 	char* state = NULL;
 	for (uint32_t i=0; child != NULL;i++) {
-		if (child->running)
+		if (child->running) {
 			state = "Running";
-		else
+			printf("[%u]\t %s \t\t %u: %s\n",i,state,child->pid,child->command);
+		} else {
 			state = "Done";
-		printf("[%u]\t %s \t\t %u: %s\n",i,state,child->pid,child->command);
+			printf("[%u]\t %s \t\t %u: %s\n",i,state,child->pid,child->command);
+			del(list,child->pid);
+		}
 		child = child->next;
 	}
 }
 
-void kill_children(proclist* list) {
+void change_state(proclist* list,pid_t pid)
+{
+	proc* child = list->head;
+	while(child != NULL){
+		if(child->pid == pid){
+			child->running = !(child->running);
+			break;
+		}
+		child = child->next;
+	}
+}
+
+void clean_list(proclist* list){
+	proc* child = list->head;
+	for(uint32_t i=0;child != NULL;i++){
+		if(!(child->running)){
+			printf("[%u]\t done \t\t %u: %s\n",i,child->pid,child->command);
+			del(list,child->pid);
+		}
+		child = child->next;
+	}
+}
+
+void kill_children(proclist* list) 
+{
 	proc* child;
 	while (list->head != NULL) {
 		child = list->head;
 		list->head = child->next;
+		kill(child->pid,SIGKILL);
 		free(child->command);
 		free(child);
 	}
