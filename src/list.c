@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include "list.h"
+#include "process.h"
 
 proclist* create_list(void) 
 {
@@ -18,15 +19,9 @@ void add(proclist* list, pid_t pid, char** command)
 {
 	/* We store the command in one string */
 	proc* child = malloc(sizeof(proc));
-	uint32_t length = 0;
-	for (uint32_t i=0; command[i] != NULL; i++)
-		length += strlen(command[i])+1;
-	child->command = calloc(length+1, 1);
-	for (uint32_t i=0; command[i] != NULL; i++) {
-		strcat(child->command, command[i]);
-		strcat(child->command, " ");
-	}
-
+	child->command = calloc(getlen_cmd(command), 1);
+	write_cmd(&(child->command),command);
+	
 	child->pid = pid;
 	child->next = NULL;
 	child->running = true;

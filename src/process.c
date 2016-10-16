@@ -1,18 +1,42 @@
 #include "process.h"
-#include <errno.h>
+
+uint32_t getlen_cmd(char** command)
+{
+	uint32_t length = 0;
+	for (uint32_t i=0; command[i] != NULL; i++)
+		length += strlen(command[i])+1;
+	return length;
+}
+
+void write_cmd(char** buffer,char** command)
+{
+	for (uint32_t i=0; command[i] != NULL; i++) {
+		strcat(*(buffer), command[i]);
+		strcat(*(buffer), " ");
+	}
+}
 
 void terminate(char *line, proclist* list)
 {
-#if USE_GNU_READLINE == 1
+	#if USE_GNU_READLINE == 1
 	/* rl_clear_history() does not exist yet in centOS 6 */
 	clear_history();
-#endif
+	#endif
+
 	if (line)
 		free(line);
 	/* We have to kill all our children before leaving */
 	disp_jobs(list);
 	kill_children(list);
 	exit(0);
+}
+
+void write_error(char** command)
+{
+	char* error = calloc(getlen_cmd(command),1);
+	write_cmd(&error,command);
+	fprintf(stderr,"ensishell: %s: comand not found\n",error);
+	free(error);
 }
 
 int special_calls(char* line,proclist* jobs_list)
@@ -83,14 +107,15 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 		redirect_process(l);
 		// Pipe if needed
 		if (l->seq[1] == NULL) {
-			if (execvp(**(l->seq), *(l->seq)) == -1)
+			if (execvp(**(l->seq), *(l->seq)) == -1){
+				write_error(l->seq[0]);
 				exit(0);
+			}
 		}
 		else
 			pipe_process(l->seq);
 	}
 }
-
 
 int setup_line(struct cmdline** l, char* line, proclist* jobs_list)
 {
