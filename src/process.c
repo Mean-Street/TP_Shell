@@ -1,4 +1,5 @@
 #include "process.h"
+#include <sys/time.h>
 
 uint32_t getlen_cmd(char** command)
 {
@@ -88,6 +89,7 @@ void redirect_process(struct cmdline* l)
 void create_process(proclist* jobs_list, struct cmdline* l)
 {
 	uint32_t child_pid = fork();
+	struct timeval start_time;
 
 	if (child_pid < 0) {
 		fprintf(stderr,"Error when trying to fork.\n");
@@ -99,7 +101,8 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 		if (!l->bg)
 			waitpid(child_pid,NULL, 0);
 		else {
-			add(jobs_list, child_pid, l->seq[0]);
+			gettimeofday(&start_time,NULL);
+			add(jobs_list, child_pid, start_time, l->seq[0]);
 			printf("[%u] %d\n",jobs_list->size,child_pid);
 		}
 	} 

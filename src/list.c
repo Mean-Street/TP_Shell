@@ -15,7 +15,7 @@ proclist* create_list(void)
 	return list;
 }
 
-void add(proclist* list, pid_t pid, char** command) 
+void add(proclist* list, pid_t pid, struct timeval start_time, char** command) 
 {
 	/* We store the command in one string */
 	proc* child = malloc(sizeof(proc));
@@ -23,6 +23,7 @@ void add(proclist* list, pid_t pid, char** command)
 	write_cmd(&(child->command),command);
 	
 	child->pid = pid;
+	child->start_time = start_time;
 	child->next = NULL;
 	child->running = true;
 
@@ -107,6 +108,16 @@ void clean_list(proclist* list){
 			printf("[%u]\t done \t\t %u: %s\n",i,child->pid,child->command);
 			del(list,child->pid);
 		}
+		child = child->next;
+	}
+}
+
+void getchild_time(proclist* list,pid_t pid,struct timeval* tv)
+{
+	proc* child = list->head;
+	for(uint32_t i=1;child != NULL;i++){
+		if(child->pid == pid)
+			*tv = child->start_time;
 		child = child->next;
 	}
 }

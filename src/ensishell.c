@@ -54,9 +54,22 @@ SCM executer_wrapper(SCM x)
 /* Our handler will deal with multiple processes running in background */
 void childhandler(int s)
 {
+	struct timeval start_time;
+	struct timeval end_time;
+	double elapsed_time;
 	pid_t pid = 0;
-	while ((pid = waitpid(-1,NULL,WNOHANG))>0)
+	while ((pid = waitpid(-1,NULL,WNOHANG))>0){
+		gettimeofday(&end_time,NULL);
+		getchild_time(jobs_list,pid,&start_time);
+
+		/* We print the elpased time in ms for now */
+		elapsed_time = (end_time.tv_sec - start_time.tv_sec) * 1000;
+		elapsed_time += (end_time.tv_usec - start_time.tv_usec) / 1000;
+
+		printf("\t%d is done, running for: %fms\n>",pid,elapsed_time);
+		fflush(stdout);
 		change_state(jobs_list,pid);
+	}
 }
 
 int main()
@@ -91,7 +104,7 @@ int main()
 		add_history(line);
 		#endif
 
-		if(special_calls(line,jobs_list))
+		if (special_calls(line, jobs_list))
 			continue;
 
 		#if USE_GUILE == 1
@@ -102,7 +115,7 @@ int main()
 		}
 		#endif
 
-		if(setup_line(&l,line,jobs_list) == 0)
+		if(setup_line(&l, line, jobs_list) == 0)
 			continue;
 		if (l->seq[0] != NULL) {
 			create_process(jobs_list, l);

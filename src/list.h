@@ -3,9 +3,11 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/time.h>
 
 typedef struct child {
 	pid_t pid;
+	struct timeval start_time;
 	char* command;
 	bool running;
 	struct child* next;
@@ -18,7 +20,8 @@ typedef struct {
 } proclist;
 
 proclist* create_list(void);
-void add(proclist* list, pid_t pid, char** command);
+void getchild_time(proclist* list, pid_t pid,struct timeval* tv);
+void add(proclist* list, pid_t pid,struct timeval start_time, char** command);
 void del(proclist* list, pid_t pid);
 void disp_jobs(proclist* list);
 void kill_children(proclist* list);
