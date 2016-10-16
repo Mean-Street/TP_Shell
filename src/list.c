@@ -15,7 +15,7 @@ proclist* create_list(void)
 	return list;
 }
 
-void add(proclist* list, pid_t pid, struct timeval start_time, char** command) 
+void add(proclist* list, pid_t pid, struct timeval start_time, char*** command) 
 {
 	/* We store the command in one string */
 	proc* child = malloc(sizeof(proc));

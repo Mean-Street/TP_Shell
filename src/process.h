@@ -22,10 +22,10 @@ int setup_line(struct cmdline** l, char* line, proclist* jobs_list);
 
 int special_calls(char* line,proclist* jobs_list);
 
-uint32_t getlen_cmd(char** command);
+uint32_t getlen_cmd(char*** command);
 
-void write_cmd(char** buffer,char** command);
+void write_cmd(char** buffer,char*** command);
 
-void write_error(char** command);
+void write_error(char*** command);
 
 #endif

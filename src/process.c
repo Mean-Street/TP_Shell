@@ -1,21 +1,27 @@
 #include "process.h"
 #include <sys/time.h>
 
-uint32_t getlen_cmd(char** command)
+uint32_t getlen_cmd(char*** command)
 {
 	uint32_t length = 0;
-	for (uint32_t i=0; command[i] != NULL; i++)
-		length += strlen(command[i])+1;
+	for(uint32_t i=0; command[i] != NULL;i++){
+		for (uint32_t j=0; command[i][j] != NULL; j++)
+			length += strlen(command[i][j])+1;
+		length += 1;
+	}
 	return length+1;
 }
 
-void write_cmd(char** buffer,char** command)
+void write_cmd(char** buffer,char*** command)
 {
-	for (uint32_t i=0; command[i] != NULL; i++) {
-		strcat(*(buffer), command[i]);
-		strcat(*buffer, " ");
+	for(uint32_t i=0; command[i] != NULL; i++) {
+		for (uint32_t j=0; command[i][j] != NULL; j++) {
+			strcat(*buffer, command[i][j]);
+			strcat(*buffer, " ");
+		}
+		strcat(*buffer, "|");
 	}
-	strcat(*buffer,"\0");
+	*(*buffer + strlen(*buffer)-2) = '\0';
 }
 
 void terminate(char *line, proclist* list)
@@ -33,7 +39,7 @@ void terminate(char *line, proclist* list)
 	exit(0);
 }
 
-void write_error(char** command)
+void write_error(char*** command)
 {
 	char* error = calloc(getlen_cmd(command),1);
 	write_cmd(&error,command);
@@ -110,7 +116,7 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 			waitpid(child_pid,NULL, 0);
 		else {
 			gettimeofday(&start_time,NULL);
-			add(jobs_list, child_pid, start_time, l->seq[0]);
+			add(jobs_list, child_pid, start_time, l->seq);
 			printf("[%u] %d\n",jobs_list->size,child_pid);
 		}
 	} 
@@ -119,10 +125,10 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 	else {
 		// Redirect if needed
 		redirect_process(l);
-		// Pipe if needed
+		// No pipe needed
 		if (l->seq[1] == NULL) {
 			if (execvp(**(l->seq), *(l->seq)) == -1){
-				write_error(l->seq[0]);
+				write_error(l->seq);
 				exit(0);
 			}
 		}
@@ -142,8 +148,5 @@ int setup_line(struct cmdline** l, char* line, proclist* jobs_list)
 		printf("error: %s\n", (*l)->err);
 		return 0;
 	}
-	/*if ((*l)->in) printf("in: %s\n", (*l)->in);
-	if ((*l)->out) printf("out: %s\n", (*l)->out);
-	if ((*l)->bg) printf("background (&)\n");*/
 	return 1;
 }
