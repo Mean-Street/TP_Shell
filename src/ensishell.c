@@ -84,7 +84,6 @@ int main()
 	sigaction(SIGCHLD,&sa,NULL);
 
 	char *line = NULL;
-	int res;
 	char *prompt = "ensishell>";
 	struct cmdline *l;
 
@@ -103,8 +102,6 @@ int main()
 #if USE_GNU_READLINE == 1
 		add_history(line);
 #endif
-
-
 #if USE_GUILE == 1
 		/* The line is a scheme command */
 		if (line[0] == '(') {
@@ -112,10 +109,7 @@ int main()
 			continue;
 		}
 #endif
-
-		/* parsecmd free line and set it up to 0 */
-
-			continue;
+		setup_line(&l,line,jobs_list);
 		if (l->seq[0] != NULL) {
 			create_process(jobs_list, l);
 		}
