@@ -12,6 +12,7 @@ uint32_t getlen_cmd(char*** command)
 	return length+1;
 }
 
+/*TODO Allocating two more bytes than needed, maybe change it */
 void write_cmd(char** buffer,char*** command)
 {
 	for(uint32_t i=0; command[i] != NULL; i++) {
