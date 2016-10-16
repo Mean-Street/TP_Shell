@@ -57,12 +57,20 @@ void pipe_process(char*** seq)
 	int pipe_tab[2];
 	pipe(pipe_tab);
 	int res = fork();
+	if (res == -1) {
+		fprintf(stderr, "Error when trying to fork.\n");
+		exit(0);
+	}
 	// The son becomes the 'after pipe'
-	if (res == 0) {
+	if (res != 0) {
 		dup2(pipe_tab[0], 0);
 		close(pipe_tab[0]);
 		close(pipe_tab[1]);
-		execvp(*(seq[1]), seq[1]);
+		if (seq[2] == NULL) {
+			execvp(*(seq[1]), seq[1]);
+		} else {
+			pipe_process(&(seq[1]));
+		}
 	// The grand son becomes the 'before pipe'
 	} else {
 		dup2(pipe_tab[1], 1);
