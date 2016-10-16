@@ -84,7 +84,6 @@ int main()
 	sigaction(SIGCHLD,&sa,NULL);
 
 	char *line = NULL;
-	int res;
 	char *prompt = "ensishell>";
 	struct cmdline *l;
 
