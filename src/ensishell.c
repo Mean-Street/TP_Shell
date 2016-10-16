@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <errno.h>
 #include <fcntl.h>
 #include "variante.h"
 #include "readcmd.h"
