@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <errno.h>
 #include <fcntl.h>
 #include "variante.h"
 #include "readcmd.h"
@@ -47,6 +48,8 @@ void childhandler(int s)
 int question6_executer(char *line)
 {
 	struct cmdline* l;
+	if(special_calls(line,jobs_list))
+		return 1;
 	if(setup_line(&l, line, jobs_list) == 0)
 		return 0;
 	if (l->seq[0] != NULL) {
@@ -96,17 +99,12 @@ int main()
 		   can not be cleaned at the end of the program. Thus
 		   one memory leak per command seems unavoidable yet */
 		line = readline(prompt);
-		
 #if USE_GNU_READLINE == 1
 		add_history(line);
 #endif
-		if (line == NULL || ! strncmp(line, "exit", 4)) {
-			terminate(line, jobs_list);
-		} else if (! strncmp(line, "jobs", 4)) {
-			disp_jobs(jobs_list);
+		if(special_calls(line,jobs_list))
 			continue;
-		}
-
+		
 #if USE_GUILE == 1
 		/* The line is a scheme command */
 		if (line[0] == '(') {
@@ -114,6 +112,7 @@ int main()
 			continue;
 		}
 #endif
+
 		if(setup_line(&l,line,jobs_list) == 0)
 			continue;
 		if (l->seq[0] != NULL) {

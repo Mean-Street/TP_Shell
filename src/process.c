@@ -1,4 +1,5 @@
 #include "process.h"
+#include <errno.h>
 
 void terminate(char *line, proclist* list)
 {
@@ -12,6 +13,17 @@ void terminate(char *line, proclist* list)
 	disp_jobs(list);
 	kill_children(list);
 	exit(0);
+}
+
+int special_calls(char* line,proclist* jobs_list)
+{
+	if (line == NULL || ! strncmp(line, "exit", 4))
+		terminate(line, jobs_list);
+	else if (! strncmp(line, "jobs", 4)){
+		disp_jobs(jobs_list);
+		return 1;
+	}
+	return 0;
 }
 
 void pipe_process(char*** seq)
@@ -70,8 +82,10 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 		// Redirect if needed
 		redirect_process(l);
 		// Pipe if needed
-		if (l->seq[1] == NULL)
-			execvp(**(l->seq), *(l->seq));
+		if (l->seq[1] == NULL){
+			if(execvp(**(l->seq), *(l->seq)) == -1)
+				exit(errno);
+		}
 		else
 			pipe_process(l->seq);
 	}
