@@ -19,4 +19,6 @@ void redirect_process(struct cmdline* l);
 void create_process(proclist* jobs_list, struct cmdline* l);
 
 int setup_line(struct cmdline** l, char* line, proclist* jobs_list);
+
+int special_calls(char* line,proclist* jobs_list);
 #endif

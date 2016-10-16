@@ -14,6 +14,17 @@ void terminate(char *line, proclist* list)
 	exit(0);
 }
 
+int special_calls(char* line,proclist* jobs_list)
+{
+	if (line == NULL || ! strncmp(line, "exit", 4))
+		terminate(line, jobs_list);
+	else if (! strncmp(line, "jobs", 4)){
+		disp_jobs(jobs_list);
+		return 1;
+	}
+	return 0;
+}
+
 void pipe_process(char*** seq)
 {
 	int pipe_tab[2];
