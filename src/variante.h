@@ -2,7 +2,7 @@
 #define VARIANTE_H
 
 #define LOGINS carrel;delochma
-#define SUJET 0
+#define SUJET 2
 #define USE_GUILE 1
 #define USE_GNU_READLINE 1
 

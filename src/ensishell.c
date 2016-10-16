@@ -20,31 +20,17 @@
 #include "list.h"
 #include "process.h"
 
-proclist* jobs_list;
-
 #ifndef VARIANTE
 #error "Variante non défini !!"
 #endif
 
-/* Guile (1.8 and 2.0) is auto-detected by cmake */
-/* To disable Scheme interpreter (Guile support), comment the
- * following lines.  You may also have to comment related pkg-config
- * lines in CMakeLists.txt.
- */
-
-/* Our handler will deal with multiple processes running in background */
-void childhandler(int s)
-{
-	pid_t pid = 0;
-	while ((pid = waitpid(-1,NULL,WNOHANG))>0)
-		change_state(jobs_list,pid);
-}
-
+/* Linked list of background process */
+proclist* jobs_list;
 
 #if USE_GUILE == 1
 #include <libguile.h>
 #include "scheme.h"
-
+/* Executes the scheme commands */
 int question6_executer(char *line)
 {
 	struct cmdline* l;
@@ -58,31 +44,35 @@ int question6_executer(char *line)
 	}
 	return 1;
 }
-
 SCM executer_wrapper(SCM x)
 {
 	return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
 }
-
-
 #endif
 
 
+/* Our handler will deal with multiple processes running in background */
+void childhandler(int s)
+{
+	pid_t pid = 0;
+	while ((pid = waitpid(-1,NULL,WNOHANG))>0)
+		change_state(jobs_list,pid);
+}
 
 int main()
 {
+	printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
+
 	/* Creating jobs list */
 	jobs_list = create_list();
 
-	printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
-
-#if USE_GUILE == 1
+	#if USE_GUILE == 1
 	scm_init_guile();
-	/* register "executer" function in scheme */
+	/* Register "executer" function in scheme */
 	scm_c_define_gsubr("executer", 1, 0, 0, executer_wrapper);
-#endif
+	#endif
 
-	/* Defining the signal handler */
+	/* Linking the signal handler */
 	struct sigaction sa;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = childhandler;
@@ -92,26 +82,25 @@ int main()
 	char *prompt = ">";
 	struct cmdline *l;
 
-	while (1) {
+	for (;;) {
 		line = NULL;
-
-		/* Readline use some internal memory structure that
-		   can not be cleaned at the end of the program. Thus
-		   one memory leak per command seems unavoidable yet */
+		/* One memory leak per command seems unavoidable, internal memory */
 		line = readline(prompt);
-#if USE_GNU_READLINE == 1
+
+		#if USE_GNU_READLINE == 1
 		add_history(line);
-#endif
+		#endif
+
 		if(special_calls(line,jobs_list))
 			continue;
-		
-#if USE_GUILE == 1
+
+		#if USE_GUILE == 1
 		/* The line is a scheme command */
 		if (line[0] == '(') {
 			setup_scheme(line);
 			continue;
 		}
-#endif
+		#endif
 
 		if(setup_line(&l,line,jobs_list) == 0)
 			continue;

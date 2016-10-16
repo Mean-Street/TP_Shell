@@ -5,15 +5,16 @@ uint32_t getlen_cmd(char** command)
 	uint32_t length = 0;
 	for (uint32_t i=0; command[i] != NULL; i++)
 		length += strlen(command[i])+1;
-	return length;
+	return length+1;
 }
 
 void write_cmd(char** buffer,char** command)
 {
 	for (uint32_t i=0; command[i] != NULL; i++) {
 		strcat(*(buffer), command[i]);
-		strcat(*(buffer), " ");
+		strcat(*buffer, " ");
 	}
+	strcat(*buffer,"\0");
 }
 
 void terminate(char *line, proclist* list)
@@ -97,8 +98,10 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 	if (child_pid != 0) {
 		if (!l->bg)
 			waitpid(child_pid,NULL, 0);
-		else
+		else {
 			add(jobs_list, child_pid, l->seq[0]);
+			printf("[%u] %d\n",jobs_list->size,child_pid);
+		}
 	} 
 
 	// CHILD PROCESS
@@ -128,8 +131,8 @@ int setup_line(struct cmdline** l, char* line, proclist* jobs_list)
 		printf("error: %s\n", (*l)->err);
 		return 0;
 	}
-	if ((*l)->in) printf("in: %s\n", (*l)->in);
+	/*if ((*l)->in) printf("in: %s\n", (*l)->in);
 	if ((*l)->out) printf("out: %s\n", (*l)->out);
-	if ((*l)->bg) printf("background (&)\n");
+	if ((*l)->bg) printf("background (&)\n");*/
 	return 1;
 }

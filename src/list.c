@@ -75,7 +75,7 @@ void disp_jobs(proclist* list)
 {
 	proc* child = list->head;
 	char* state = NULL;
-	for (uint32_t i=0; child != NULL;i++) {
+	for (uint32_t i=1; child != NULL;i++) {
 		if (child->running) {
 			state = "Running";
 			printf("[%u]\t %s \t\t %u: %s\n",i,state,child->pid,child->command);
@@ -102,7 +102,7 @@ void change_state(proclist* list,pid_t pid)
 
 void clean_list(proclist* list){
 	proc* child = list->head;
-	for(uint32_t i=0;child != NULL;i++){
+	for(uint32_t i=1;child != NULL;i++){
 		if(!(child->running)){
 			printf("[%u]\t done \t\t %u: %s\n",i,child->pid,child->command);
 			del(list,child->pid);
