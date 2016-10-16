@@ -47,11 +47,11 @@ void childhandler(int s)
 int question6_executer(char *line)
 {
 	struct cmdline* l;
-	int res = setup_line(&l, line, jobs_list);
-	if (res == 0)
+	if(setup_line(&l, line, jobs_list) == 0)
 		return 0;
 	if (l->seq[0] != NULL) {
 		create_process(jobs_list, l);
+		clean_list(jobs_list);
 	}
 	return 1;
 }
@@ -114,7 +114,8 @@ int main()
 			continue;
 		}
 #endif
-		setup_line(&l,line,jobs_list);
+		if(setup_line(&l,line,jobs_list) == 0)
+			continue;
 		if (l->seq[0] != NULL) {
 			create_process(jobs_list, l);
 			clean_list(jobs_list);
