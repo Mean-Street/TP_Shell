@@ -34,7 +34,9 @@ proclist* jobs_list;
 /* Our handler will deal with multiple processes running in background */
 void childhandler(int s)
 {
-	while (waitpid(-1,NULL,WNOHANG)>0);
+	pid_t pid = 0;
+	while ((pid = waitpid(-1,NULL,WNOHANG))>0)
+		del(jobs_list,pid);
 }
 
 
