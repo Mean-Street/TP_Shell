@@ -82,8 +82,8 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 		// Redirect if needed
 		redirect_process(l);
 		// Pipe if needed
-		if (l->seq[1] == NULL){
-			if(execvp(**(l->seq), *(l->seq)) == -1)
+		if (l->seq[1] == NULL) {
+			if (execvp(**(l->seq), *(l->seq)) == -1)
 				exit(errno);
 		}
 		else
