@@ -7,7 +7,18 @@
 #include <sys/resource.h>
 
 int main(void) {
-	struct rlimit t = {3, 8};
+	struct timeval t1 = {0, 0};
+	struct timeval t2 = {3, 0};
+	struct itimerval t = {t1, t2};
+
+	void encule (int s) {
+		printf("MOTHERFUCKER\n");
+	}
+
+	struct sigaction sa;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = encule;
+	sigaction(SIGALRM, &sa, NULL);
 
 	uint32_t child_pid = fork();
 
@@ -16,12 +27,12 @@ int main(void) {
 		waitpid(child_pid, NULL, 0);
 	// child
 	} else {
-		setrlimit(RLIMIT_CPU, &t);
+		setitimer(ITIMER_REAL, &t, NULL);
+
 		char* s[3];
 		s[0] = "sleep";
 		s[1] = "1000";
 		s[2] = NULL;
-		/* while(1); */
 		execvp(*s, s);
 	}
 }
