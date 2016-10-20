@@ -64,6 +64,9 @@ void childhandler(int s)
 	double elapsed_time;
 	pid_t pid = 0;
 	while ((pid = waitpid(-1,NULL,WNOHANG))>0){
+		/* For Terminaison Asynchrone we would do that, but we prefer not printing a message, it is weird, so we commented it */
+		/*printf("%d is done !!!\n",pid);*/
+
 		gettimeofday(&end_time,NULL);
 		getchild_time(jobs_list,pid,&start_time);
 
@@ -71,7 +74,7 @@ void childhandler(int s)
 		elapsed_time = (end_time.tv_sec - start_time.tv_sec) * 1000;
 		elapsed_time += (end_time.tv_usec - start_time.tv_usec) / 1000;
 
-		printf("\t%d is done, running for: %fms\n>",pid,elapsed_time);
+		printf("%d is done, running for: %fms\n>",pid,elapsed_time);
 		fflush(stdout);
 		change_state(jobs_list,pid);
 	}
@@ -102,8 +105,7 @@ int main()
 	char *prompt = ">";
 	struct cmdline *l;
 
-
-	for (;;) {
+	while (1) {
 		line = NULL;
 		/* One memory leak per command seems unavoidable, internal memory */
 		line = readline(prompt);
