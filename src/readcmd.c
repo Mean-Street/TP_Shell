@@ -12,6 +12,8 @@
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
+#include <wordexp.h>
+#include <stdbool.h>
 #include "readcmd.h"
 
 static void memory_error(void)
@@ -218,13 +220,19 @@ struct cmdline *parsecmd(char **pline)
 	static struct cmdline *static_cmdline = 0;
 	struct cmdline *s = static_cmdline;
 	char **words;
-	int i;
+	int i,j;
 	char *w;
 	char **cmd;
 	char ***seq;
 	size_t cmd_len, seq_len;
+	char* str;
+	bool special;
 
-	if (line == NULL) {
+	/* We are creating the wordexp variables */
+	char** we;
+	wordexp_t p;
+
+	if (line == 0) {
 		if (s) {
 			freecmd(s);
 			free(s);
@@ -308,9 +316,33 @@ struct cmdline *parsecmd(char **pline)
 				cmd_len = 0;
 				break;
 			default:
-				cmd = xrealloc(cmd, (cmd_len + 2) * sizeof(char *));
-				cmd[cmd_len++] = w;
-				cmd[cmd_len] = 0;
+				special = false;
+				for(j = 0; j<strlen(w); j++){
+					if(w[j] == '*' || w[j] == '{' || w[j] == '~' || w[j] == '$'){
+						special = true;
+						break;
+					}
+				}
+				if(special){
+					wordexp(w,&p,0);
+					we = p.we_wordv;
+					for(j = 0; j < p.we_wordc; j++){
+						cmd = xrealloc(cmd, (cmd_len + 2) * sizeof(char *));
+						
+						/* We need to do that to be able to free cmd without raising errors */
+						str = malloc(strlen(we[j])+1);
+						strcpy(str,we[j]);
+						cmd[cmd_len] = str;
+
+						cmd_len += 1;
+						cmd[cmd_len] = 0;
+					}
+				}
+				else {
+					cmd = xrealloc(cmd, (cmd_len + 2) * sizeof(char *));
+					cmd[cmd_len++] = w;
+					cmd[cmd_len] = 0;
+				}
 		}
 	}
 
