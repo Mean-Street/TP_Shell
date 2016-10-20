@@ -339,6 +339,7 @@ struct cmdline *parsecmd(char **pline)
 						cmd_len += 1;
 						cmd[cmd_len] = 0;
 					}
+					wordfree(&p);
 				}
 				/* Nothing special to do */
 				else {

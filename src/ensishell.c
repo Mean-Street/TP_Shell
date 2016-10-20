@@ -59,6 +59,9 @@ void childhandler(int s)
 	double elapsed_time;
 	pid_t pid = 0;
 	while ((pid = waitpid(-1,NULL,WNOHANG))>0){
+		/* For Terminaison Asynchrone we would do that, but we prefer not printing a message, it is weird, so we commented it */
+		/*printf("%d is done !!!\n",pid);*/
+
 		gettimeofday(&end_time,NULL);
 		getchild_time(jobs_list,pid,&start_time);
 
