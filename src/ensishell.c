@@ -13,6 +13,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <errno.h>
 #include <fcntl.h>
 #include "variante.h"
@@ -27,6 +29,9 @@
 /* Linked list of background process */
 proclist* jobs_list;
 
+struct rlimit time_limit = {0, 5};
+
+
 #if USE_GUILE == 1
 #include <libguile.h>
 #include "scheme.h"
@@ -34,12 +39,12 @@ proclist* jobs_list;
 int question6_executer(char *line)
 {
 	struct cmdline* l;
-	if(special_calls(line,jobs_list))
+	if(special_calls(line,jobs_list, &time_limit))
 		return 1;
 	if(setup_line(&l, line, jobs_list) == 0)
 		return 0;
 	if (l->seq[0] != NULL) {
-		create_process(jobs_list, l);
+		create_process(jobs_list, l, &time_limit);
 		clean_list(jobs_list);
 	}
 	return 1;
@@ -75,6 +80,8 @@ void childhandler(int s)
 	}
 }
 
+
+
 int main()
 {
 	printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
@@ -88,7 +95,7 @@ int main()
 	scm_c_define_gsubr("executer", 1, 0, 0, executer_wrapper);
 	#endif
 
-	/* Linking the signal handler */
+	/* Linking the signal handlers */
 	struct sigaction sa;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = childhandler;
@@ -107,7 +114,7 @@ int main()
 		add_history(line);
 		#endif
 
-		if (special_calls(line, jobs_list))
+		if (special_calls(line, jobs_list, &time_limit))
 			continue;
 
 		#if USE_GUILE == 1
@@ -121,7 +128,7 @@ int main()
 		if(setup_line(&l, line, jobs_list) == 0)
 			continue;
 		if (l->seq[0] != NULL) {
-			create_process(jobs_list, l);
+			create_process(jobs_list, l, &time_limit);
 			clean_list(jobs_list);
 		}
 	}
