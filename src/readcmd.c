@@ -317,12 +317,14 @@ struct cmdline *parsecmd(char **pline)
 				break;
 			default:
 				special = false;
+				/* If a word doesn't contain special characters, normal call */
 				for(j = 0; j<strlen(w); j++){
 					if(w[j] == '*' || w[j] == '{' || w[j] == '~' || w[j] == '$'){
 						special = true;
 						break;
 					}
 				}
+				/* We have special chars, we need to call wordexp */
 				if(special){
 					wordexp(w,&p,0);
 					we = p.we_wordv;
@@ -338,6 +340,7 @@ struct cmdline *parsecmd(char **pline)
 						cmd[cmd_len] = 0;
 					}
 				}
+				/* Nothing special to do */
 				else {
 					cmd = xrealloc(cmd, (cmd_len + 2) * sizeof(char *));
 					cmd[cmd_len++] = w;
