@@ -330,12 +330,10 @@ struct cmdline *parsecmd(char **pline)
 					we = p.we_wordv;
 					for(j = 0; j < p.we_wordc; j++){
 						cmd = xrealloc(cmd, (cmd_len + 2) * sizeof(char *));
-						
 						/* We need to do that to be able to free cmd without raising errors */
 						str = malloc(strlen(we[j])+1);
 						strcpy(str,we[j]);
 						cmd[cmd_len] = str;
-
 						cmd_len += 1;
 						cmd[cmd_len] = 0;
 					}
