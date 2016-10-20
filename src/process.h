@@ -4,6 +4,8 @@
 #include "readcmd.h"
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <fcntl.h>
 
 
@@ -16,11 +18,11 @@ void pipe_process(char*** seq);
 
 void redirect_process(struct cmdline* l);
 
-void create_process(proclist* jobs_list, struct cmdline* l);
+void create_process(proclist* jobs_list, struct cmdline* l, struct rlimit* time_limit);
 
 int setup_line(struct cmdline** l, char* line, proclist* jobs_list);
 
-int special_calls(char* line,proclist* jobs_list);
+int special_calls(char* line,proclist* jobs_list, struct rlimit* time_limit);
 
 uint32_t getlen_cmd(char*** command);
 

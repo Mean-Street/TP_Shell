@@ -1,5 +1,6 @@
 #include "process.h"
 #include <sys/time.h>
+#include <sys/resource.h>
 
 uint32_t getlen_cmd(char*** command)
 {
@@ -48,12 +49,23 @@ void write_error(char*** command)
 	free(error);
 }
 
-int special_calls(char* line,proclist* jobs_list)
+
+void set_time_limit(struct rlimit* time_limit, int rlim) {
+	printf("Set new time limit to %d\n", rlim);
+	time_limit->rlim_cur = rlim;	
+	time_limit->rlim_max = rlim+5;	
+}
+
+
+int special_calls(char* line,proclist* jobs_list, struct rlimit* time_limit)
 {
 	if (line == NULL || ! strncmp(line, "exit", 4))
 		terminate(line, jobs_list);
-	else if (! strncmp(line, "jobs", 4)){
+	else if ((! strncmp(line, "jobs", 4)) && strlen(line) == 4) {
 		disp_jobs(jobs_list);
+		return 1;
+	} else if (! strncmp(line, "ulimit", 6) && line[6] == ' ') {
+		set_time_limit(time_limit, atoi(line+7));
 		return 1;
 	}
 	return 0;
@@ -101,7 +113,8 @@ void redirect_process(struct cmdline* l)
 	}
 }
 
-void create_process(proclist* jobs_list, struct cmdline* l)
+
+void create_process(proclist* jobs_list, struct cmdline* l, struct rlimit* time_limit)
 {
 	uint32_t child_pid = fork();
 	struct timeval start_time;
@@ -124,6 +137,10 @@ void create_process(proclist* jobs_list, struct cmdline* l)
 
 	// CHILD PROCESS
 	else {
+		// Set time limit if defined
+		if (time_limit->rlim_cur != 0) {
+			setrlimit(RLIMIT_CPU, time_limit);
+		}
 		// Redirect if needed
 		redirect_process(l);
 		// No pipe needed
