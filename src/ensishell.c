@@ -98,6 +98,7 @@ int main()
 	/* Linking the signal handlers */
 	struct sigaction sa;
 	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
 	sa.sa_handler = childhandler;
 	sigaction(SIGCHLD,&sa,NULL);
 
