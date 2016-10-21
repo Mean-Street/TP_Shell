@@ -2,7 +2,7 @@
 #define VARIANTE_H
 
 #define LOGINS carrel;delochma
-#define SUJET 2
+#define SUJET 12
 #define USE_GUILE 1
 #define USE_GNU_READLINE 1
 
@@ -32,6 +32,9 @@
 #define VARIANTE_STRING "Jokers et environnement ; Temps de calcul ;"
 #elif VARIANTE == 11
 #define VARIANTE_STRING "Jokers étendus (tilde, brace) ; Terminaison asynchrone ;"
+
+#elif VARIANTE == 12
+#define VARIANTE_STRING "Jokers et environnement ; Temps de calcul ; Limitation du temps de calcul ; Pipes multiples ; Terminaison asynchrone (on s'est un peu amusés)"
 #endif
 
 #endif
