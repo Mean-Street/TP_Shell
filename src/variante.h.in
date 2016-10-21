@@ -32,6 +32,9 @@
 #define VARIANTE_STRING "Jokers et environnement ; Temps de calcul ;"
 #elif VARIANTE == 11
 #define VARIANTE_STRING "Jokers étendus (tilde, brace) ; Terminaison asynchrone ;"
+
+#elif VARIANTE == 12
+#define VARIANTE_STRING "Jokers et environnement ; Temps de calcul ; Limitation du temps de calcul ; Pipes multiples ; Terminaison asynchrone (on s'est un peu amusés)"
 #endif
 
 #endif
