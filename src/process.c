@@ -139,6 +139,8 @@ void create_process(proclist* jobs_list, struct cmdline* l, struct rlimit* time_
 	else {
 		// Set time limit if defined
 		if (time_limit->rlim_cur != 0) {
+			// WARNING : setrlimit sets a limit for the CPU time, not the wall time
+			// so a sleep command won't seem affected by it as it doesn't spend a lot of time in the CPU
 			setrlimit(RLIMIT_CPU, time_limit);
 		}
 		// Redirect if needed
